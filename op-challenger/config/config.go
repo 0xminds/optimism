@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"runtime"
 	"slices"
 	"time"
@@ -230,7 +231,10 @@ func (c Config) Check() error {
 				return ErrCannonNetworkAndL2Genesis
 			}
 			if ch := chaincfg.ChainByName(c.Cannon.Network); ch == nil {
-				return fmt.Errorf("%w: %v", ErrCannonNetworkUnknown, c.Cannon.Network)
+				// Check if this looks like a chain ID that could be a custom chain configuration.
+				if match, err := regexp.MatchString("^[0-9]+$", c.Cannon.Network); err != nil || !match {
+					return fmt.Errorf("%w: %v", ErrCannonNetworkUnknown, c.Cannon.Network)
+				}
 			}
 		}
 		if c.CannonAbsolutePreState == "" && c.CannonAbsolutePreStateBaseURL == nil {
