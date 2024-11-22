@@ -20,29 +20,30 @@ clean:
 # Run tests
 test: (go_test "./...")
 
-# Run fuzz tests
-[private]
-fuzz_task FUZZ TIME='10s': (go_fuzz FUZZ TIME "./rollup/derive")
-
-fuzz:
-    #!{{MAP_JUST}} fuzz_task
-    FuzzL1InfoBedrockRoundTrip
-    FuzzL1InfoEcotoneRoundTrip
-    FuzzL1InfoAgainstContract
-    FuzzUnmarshallLogEvent
-    FuzzParseFrames
-    FuzzFrameUnmarshalBinary
-    FuzzBatchRoundTrip
-    FuzzDeriveDepositsRoundTrip
-    FuzzDeriveDepositsBadVersion
-    FuzzParseL1InfoDepositTxDataValid
-    FuzzParseL1InfoDepositTxDataBadLength
-    FuzzRejectCreateBlockBadTimestamp
-    FuzzDecodeDepositTxDataToL1Info
-
 # Generate mocks
 generate-mocks: (go_generate "./...")
 
 # Update readme
 readme:
     doctoc README.md
+
+[private]
+node_fuzz_task FUZZ TIME='10s': (go_fuzz FUZZ TIME "./rollup/derive")
+
+# Run fuzz tests
+fuzz:
+	printf "%s\n" \
+		"just node_fuzz_task FuzzL1InfoBedrockRoundTrip" \
+		"just node_fuzz_task FuzzL1InfoEcotoneRoundTrip" \
+		"just node_fuzz_task FuzzL1InfoAgainstContract" \
+		"just node_fuzz_task FuzzUnmarshallLogEvent" \
+		"just node_fuzz_task FuzzParseFrames" \
+		"just node_fuzz_task FuzzFrameUnmarshalBinary" \
+		"just node_fuzz_task FuzzBatchRoundTrip" \
+		"just node_fuzz_task FuzzDeriveDepositsRoundTrip" \
+		"just node_fuzz_task FuzzDeriveDepositsBadVersion" \
+		"just node_fuzz_task FuzzParseL1InfoDepositTxDataValid" \
+		"just node_fuzz_task FuzzParseL1InfoDepositTxDataBadLength" \
+		"just node_fuzz_task FuzzRejectCreateBlockBadTimestamp" \
+		"just node_fuzz_task FuzzDecodeDepositTxDataToL1Info" \
+	| parallel -j 8 {}
